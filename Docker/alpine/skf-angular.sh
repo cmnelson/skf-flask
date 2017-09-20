@@ -2,4 +2,4 @@
 
 # Start the SKF Angular app
 cd /skf-flask/Angular
-npm start
+npm start -- --disable-host-check

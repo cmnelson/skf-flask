@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -x
+
+
+cd /tmp; git clone https://github.com/blabla1337/skf-flask.git
+cd /tmp/skf-flask; pip3 install -r requirements.txt
+cd /tmp/skf-flask/Angular; /usr/bin/npm install -g
+
+cp ~/server.* /tmp/skf-flask
+
+rm -r /skf-flask
+mv /tmp/skf-flask /
+
+perl -pi -e "s/JWT_SECRET = ''/JWT_SECRET = 'ads90djoilq3d9awpjq29edig9e5gn73wfia9j3gl7i4sfv4wl7ibvlwi7f3e8h8oq3auwfvjshf9o5423'/" /skf-flask/skf/settings.py
+perl -pi -e "s/\*/https:\/\/owasp.nelsons.in/" /skf-flask/skf/settings.py
+perl -pi -e "s/https:\/\/localhost\/api/https:\/\/owasp.nelsons.in\/api/" /skf-flask/Angular/src/environments/environment.prod.ts
+sed -i "s/\/title>/\/title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','\/\/www.google-analytics.com\/analytics.js','ga');ga('create', 'UA-66144971-1', 'auto');ga('send', 'pageview');<\/script><!-- Facebook Pixel Code --><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https:\/\/connect.facebook.net\/en_US\/fbevents.js');fbq('init', '467164280320951'); ('track', 'PageView');<\/script>/g" /skf-flask/Angular/src/index.html
+perl -pi -e "s/<body>/<body><img height='1' width='1' style='display:none' src='https:\/\/www.facebook.com\/tr?id=467164280320951&ev=PageView&noscript=1'>/g" /skf-flask/Angular/src/index.html
+
+
+pkill python3.6
+pkill @angular
+
+pkill nginx
+sleep 3
+/usr/bin/nginx 
+
+cd /skf-flask/Angular
+sleep 3
+/skf-flask/Angular/node_modules/@angular/cli/bin/ng serve --public owasp.nelsons.in:443 --env=prod &
+sleep 3
+
+cd /skf-flask
+export FLASK_APP=skf/app.py
+export PYTHONPATH=/skf-flask
+export FLASK_DEBUG=0
+python3.6 skf/app.py &
+
+sleep 15
+
+curl -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{ "accessToken": 1234, "username": "admin", "email": "example@owasp.org", "password": "test-skf",  "repassword": "test-skf"  }' 'http://0.0.0.0:8888/api/user/activate/1'
+
+while /bin/true; do
+    PROCESS_1_STATUS=$(ps aux |grep -q nginx |grep -v grep)
+  # If the greps above find anything, they will exit with 0 status
+  # If they are not both 0, then something is wrong
+    if $PROCESS_1_STATUS -ne '0'; then
+        echo "One of the processes has already exited."
+        exit -1
+    fi
+    sleep 10
+done
+
